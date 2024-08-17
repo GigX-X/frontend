@@ -9,7 +9,7 @@ const config = {
     "./components/**/*.{ts,tsx}",
     "./app/**/*.{ts,tsx}",
     "./src/**/*.{ts,tsx}",
-    "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}", // Added NextUI content path
+    "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}", 
   ],
   prefix: "",
   theme: {
@@ -55,6 +55,15 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        blue: {
+          DEFAULT: "hsl(var(--blue))"
+        },
+        blackfaded: {
+          DEFAULT: "hsl(var(--blackfaded))"
+        },
+        black: {
+          DEFAULT: "hsl(var(--black))"
+        }
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -77,6 +86,7 @@ const config = {
       },
       fontFamily: {
         sans: ["var(--font-sans)", ...fontFamily.sans],
+        atkinson: ["var(--font-atkinson)", ...fontFamily.sans]
       },
     },
   },

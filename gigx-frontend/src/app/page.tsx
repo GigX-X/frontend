@@ -1,8 +1,5 @@
-import NavigationBar from "@/components/NavigationBar";
-import Image from "next/image";
+import LandingPage from "./_pages/LandingPage";
 
 export default function Home() {
-  return (
-    <NavigationBar/>
-  );
+  return <LandingPage />;
 }
