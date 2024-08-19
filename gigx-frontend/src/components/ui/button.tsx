@@ -19,7 +19,8 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         allBlue: "bg-blue text-destructive-foreground font-atkinson",
-        revBlue: "bg-primary-foreground text-blue font-atkinson"
+        revBlue: "bg-primary-foreground text-blue font-atkinson",
+        revBlack: "bg-white text-blackfaded font-atkinson border border-blackfaded"
       },
       size: {
         default: "h-10 px-4 py-2 rounded-3xl",
