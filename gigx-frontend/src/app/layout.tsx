@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import "./globals.css";
+import "@/app/globals.css";
 import { Inter as FontSans } from "next/font/google";
 import { Atkinson_Hyperlegible as FontAtkinson } from "next/font/google";
 import { cn } from "@/lib/utils";
@@ -13,7 +13,7 @@ const fontSans = FontSans({
 const fontAtkinson = FontAtkinson({
   subsets: ["latin"],
   weight: ["400", "700"],
-  variable: "--font-atkinson"
+  variable: "--font-atkinson",
 });
 
 export const metadata: Metadata = {
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({
-  children,
+  children
 }: Readonly<{
   children: React.ReactNode;
 }>) {
