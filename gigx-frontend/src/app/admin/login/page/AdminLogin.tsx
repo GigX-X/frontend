@@ -1,18 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "@/utils/axiosConfig";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import useAdminAuth from "@/hooks/adminAuthHook";
 
 const schema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
   password: z
     .string()
     .min(8, { message: "Password must be at least 8 characters." })
-    .max(15, {message: "Password must be at most 15 characters."})
+    .max(15, { message: "Password must be at most 15 characters." }),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -20,6 +21,14 @@ type FormData = z.infer<typeof schema>;
 export default function AdminLogin() {
   const [error, setError] = useState<string>("");
   const router = useRouter();
+  const {role, loading} = useAdminAuth();
+
+  useEffect(() => {
+    console.log("Token:", localStorage.getItem("token"));
+    if (!loading && role === "admin") {
+      router.push("/admin");
+    }
+  }, [role, loading, router]);
 
   const {
     register,
@@ -31,16 +40,15 @@ export default function AdminLogin() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      console.log("inside on submit")
+      console.log("inside on submit");
       // Send login request to API gateway
       const response = await axios.post("/user-service/admin/login", {
         email: data.email,
         password: data.password,
       });
-      console.log(response);
 
-      // Save JWT in cookies
-      document.cookie = `token=${response.data.token}; path=/;`;
+      // Save JWT in local storage
+      localStorage.setItem("token", response.data.token);
 
       // Redirect to admin dashboard
       router.push("/admin");
@@ -50,7 +58,7 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-blue sm:px-6 lg:px-8">
+    <div className="min-h-screen w-full flex items-center justify-center bg-blue sm:px-6 lg:px-8">
       <div className="max-w-md w-full h-auto border bg-white p-8 rounded-xl">
         <div>
           <h2 className="text-center text-3xl font-extrabold text-blue font-atkinson">
@@ -60,7 +68,10 @@ export default function AdminLogin() {
         <form className="mt-8" onSubmit={handleSubmit(onSubmit)}>
           <div className="rounded-md">
             <div className="mb-5">
-              <label htmlFor="email-address" className="font-atkinson font-bold text-lg tracking-wide">
+              <label
+                htmlFor="email-address"
+                className="font-atkinson font-bold text-lg tracking-wide"
+              >
                 Email
               </label>
               <input
@@ -78,7 +89,10 @@ export default function AdminLogin() {
               )}
             </div>
             <div className="mb-9">
-              <label htmlFor="password" className="font-atkinson font-bold text-lg tracking-wide">
+              <label
+                htmlFor="password"
+                className="font-atkinson font-bold text-lg tracking-wide"
+              >
                 Password
               </label>
               <input
@@ -94,10 +108,13 @@ export default function AdminLogin() {
                   {errors.password.message}
                 </p>
               )}
+              {error && (
+                <p className="mt-1 font-atkinson text-sm text-red-600 tracking-tight font-thin">
+                  {error}
+                </p>
+              )}
             </div>
           </div>
-
-          {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
 
           <div className="mt-3">
             <button

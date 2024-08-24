@@ -1,7 +1,9 @@
-export default function DashBoard() {
+import AdminDashboard from "./_pages/AdminDashboard";
+
+export default function AdminDashBoard() {
     return (
         <>
-            <h3>Admin dashboard....</h3>
+            <AdminDashboard />
         </>
     )
 }
