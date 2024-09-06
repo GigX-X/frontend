@@ -6,9 +6,14 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import useAdminAuth from "@/hooks/adminAuthHook";
 import Globe from "@/components/magicui/Globe";
 import Link from "next/link";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 
 const schema = z
   .object({
@@ -35,15 +40,9 @@ type FormData = z.infer<typeof schema>;
 
 export default function UserSignup() {
   const [error, setError] = useState<string>("");
-  const router = useRouter();
-  //   const {role, loading} = useAdminAuth();
-
-  //   useEffect(() => {
-  //     console.log("Token:", localStorage.getItem("token"));
-  //     if (!loading && role === "admin") {
-  //       router.push("/admin");
-  //     }
-  //   }, [role, loading, router]);
+  const [submitted, setSubmitted] = useState<boolean>(true);
+  const [tempToken, setTempToken] = useState<string>("asdf");
+  const [otp, setOtp] = useState<string>("");
 
   const {
     register,
@@ -63,12 +62,23 @@ export default function UserSignup() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      console.log("inside on submit");
-      console.log(data);
-    
+      const response = await axios.post("/user-service/auth/send-otp", {
+        email: data.email,
+        password: data.password,
+        username: data.fullName,
+        role: data.role,
+      });
     } catch (err) {
       setError("Invalid credentials");
     }
+  };
+
+  const verifyOtp = async () => {
+    if (tempToken === "") setSubmitted(false);
+    if (otp.length < 6) setError("Invalid otp!");
+    const response = await axios.post("/user-service/auth/signup", {
+      
+    })
   };
 
   return (
@@ -98,164 +108,209 @@ export default function UserSignup() {
           </div>
         </div>
       </div>
-      <div className="signup-form w-[50%] h-90vh flex flex-col p-10">
-        <div className="signup-heading">
-          <h3 className="font-atkinson font-bold text-3xl text-black mb-2">
-            Sign up
-          </h3>
-          <span className="font-atkinson text-black">Have an account ? </span>
-          <Link className="font-atkinson text-blue underline" href={"/sign-in"}>
-            Sign in
-          </Link>
-        </div>
-        <form className="mt-6" onSubmit={handleSubmit(onSubmit)}>
-          <div className="rounded-md">
-            <div className="mb-3">
-              <label
-                htmlFor="role"
-                className="font-atkinson text-lg tracking-wide"
-              >
-                Select Your Role
-              </label>
-              <div className="mt-2 flex space-x-4">
-                <div
-                  className={`flex-1 p-4 border-2 rounded-md cursor-pointer ${
-                    watch("role") === "worker"
-                      ? "bg-blue-50 border-blue"
-                      : "border-gray-30"
-                  }`}
-                >
-                  <label className="flex items-center space-x-3 cursor-pointer">
-                    <input
-                      type="radio"
-                      value="worker"
-                      {...register("role")}
-                      className="form-radio text-blue"
-                    />
-                    <span className="font-atkinson text-md">Worker</span>
-                  </label>
-                </div>
-                <div
-                  className={`flex-1 p-4 border-2 rounded-md cursor-pointer ${
-                    watch("role") === "client"
-                      ? "bg-blue-50 border-blue-500"
-                      : "border-gray-30"
-                  }`}
-                >
-                  <label className="flex items-center space-x-3 cursor-pointer">
-                    <input
-                      type="radio"
-                      value="client"
-                      {...register("role")}
-                      className="form-radio text-blue-600"
-                    />
-                    <span className="font-atkinson text-md">Client</span>
-                  </label>
-                </div>
-              </div>
-              {errors.role && (
-                <p className="mt-1 font-atkinson text-sm text-red-600 tracking-tight font-thin">
-                  {errors.role.message}
-                </p>
-              )}
-            </div>
-
-            <div className="mb-3">
-              <label
-                htmlFor="full-name"
-                className="font-atkinson text-lg tracking-wide"
-              >
-                Full Name
-              </label>
-              <input
-                id="full-name"
-                // name="email"
-                type="text"
-                autoComplete="name"
-                className="w-full px-3 py-3 border-2 border-gray-30 text-blackfaded rounded-md font-atkinson focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                {...register("fullName")}
-              />
-              {errors.email && (
-                <p className="mt-1 font-atkinson text-sm text-red-600 tracking-tight font-thin">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
-            <div className="mb-3">
-              <label
-                htmlFor="email-address"
-                className="font-atkinson text-lg tracking-wide"
-              >
-                Email
-              </label>
-              <input
-                id="email-address"
-                // name="password"
-                type="email"
-                autoComplete="email"
-                className="w-full px-3 py-3 border-2 border-gray-30 text-blackfaded rounded-md font-atkinson focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                {...register("email")}
-              />
-              {errors.email && (
-                <p className="mt-1 font-atkinson text-sm text-red-600 tracking-tight font-thin">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
-            <div className="mb-3">
-              <label
-                htmlFor="password"
-                className="font-atkinson text-lg tracking-wide"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                // name="password"
-                type="password"
-                autoComplete="new-password"
-                className="w-full px-3 py-3 border-2 border-gray-30 text-blackfaded rounded-md font-atkinson focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                {...register("password")}
-              />
-              {errors.password && (
-                <p className="mt-1 font-atkinson text-sm text-red-600 tracking-tight font-thin">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
-            <div className="mb-6">
-              <label
-                htmlFor="confirm-password"
-                className="font-atkinson text-lg tracking-wide"
-              >
-                Confirm Password
-              </label>
-              <input
-                id="confirm-password"
-                // name="password"
-                type="password"
-                autoComplete="new-password"
-                className="w-full px-3 py-3 border-2 border-gray-30 text-blackfaded rounded-md font-atkinson focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                {...register("confirmPassword")}
-              />
-              {errors.confirmPassword && (
-                <p className="mt-1 font-atkinson text-sm text-red-600 tracking-tight font-thin">
-                  {errors.confirmPassword.message}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div className="mt-3">
-            <button
-              type="submit"
-              className="w-1/3 flex justify-center py-3 px-4 border border-transparent text-md font-atkinson font-bold rounded-md text-white bg-blue hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
+      {!submitted ? (
+        <div className="signup-form w-[50%] h-90vh flex flex-col p-10">
+          <div className="signup-heading">
+            <h3 className="font-atkinson font-bold text-3xl text-black mb-2">
               Sign up
-            </button>
+            </h3>
+            <span className="font-atkinson text-black">Have an account ? </span>
+            <Link
+              className="font-atkinson text-blue underline"
+              href={"/sign-in"}
+            >
+              Sign in
+            </Link>
           </div>
-        </form>
-      </div>
+          <form className="mt-6" onSubmit={handleSubmit(onSubmit)}>
+            <div className="rounded-md">
+              <div className="mb-3">
+                <label
+                  htmlFor="role"
+                  className="font-atkinson text-lg tracking-wide"
+                >
+                  Select Your Role
+                </label>
+                <div className="mt-2 flex space-x-4">
+                  <div
+                    className={`flex-1 p-4 border-2 rounded-md cursor-pointer ${
+                      watch("role") === "worker"
+                        ? "bg-blue-50 border-blue"
+                        : "border-gray-30"
+                    }`}
+                  >
+                    <label className="flex items-center space-x-3 cursor-pointer">
+                      <input
+                        type="radio"
+                        value="worker"
+                        {...register("role")}
+                        className="form-radio text-blue"
+                      />
+                      <span className="font-atkinson text-md">Worker</span>
+                    </label>
+                  </div>
+                  <div
+                    className={`flex-1 p-4 border-2 rounded-md cursor-pointer ${
+                      watch("role") === "client"
+                        ? "bg-blue-50 border-blue-500"
+                        : "border-gray-30"
+                    }`}
+                  >
+                    <label className="flex items-center space-x-3 cursor-pointer">
+                      <input
+                        type="radio"
+                        value="client"
+                        {...register("role")}
+                        className="form-radio text-blue-600"
+                      />
+                      <span className="font-atkinson text-md">Client</span>
+                    </label>
+                  </div>
+                </div>
+                {errors.role && (
+                  <p className="mt-1 font-atkinson text-sm text-red-600 tracking-tight font-thin">
+                    {errors.role.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="mb-3">
+                <label
+                  htmlFor="full-name"
+                  className="font-atkinson text-lg tracking-wide"
+                >
+                  Full Name
+                </label>
+                <input
+                  id="full-name"
+                  // name="email"
+                  type="text"
+                  autoComplete="name"
+                  className="w-full px-3 py-3 border-2 border-gray-30 text-blackfaded rounded-md font-atkinson focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  {...register("fullName")}
+                />
+                {errors.email && (
+                  <p className="mt-1 font-atkinson text-sm text-red-600 tracking-tight font-thin">
+                    {errors.email.message}
+                  </p>
+                )}
+              </div>
+              <div className="mb-3">
+                <label
+                  htmlFor="email-address"
+                  className="font-atkinson text-lg tracking-wide"
+                >
+                  Email
+                </label>
+                <input
+                  id="email-address"
+                  // name="password"
+                  type="email"
+                  autoComplete="email"
+                  className="w-full px-3 py-3 border-2 border-gray-30 text-blackfaded rounded-md font-atkinson focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  {...register("email")}
+                />
+                {errors.email && (
+                  <p className="mt-1 font-atkinson text-sm text-red-600 tracking-tight font-thin">
+                    {errors.email.message}
+                  </p>
+                )}
+              </div>
+              <div className="mb-3">
+                <label
+                  htmlFor="password"
+                  className="font-atkinson text-lg tracking-wide"
+                >
+                  Password
+                </label>
+                <input
+                  id="password"
+                  // name="password"
+                  type="password"
+                  autoComplete="new-password"
+                  className="w-full px-3 py-3 border-2 border-gray-30 text-blackfaded rounded-md font-atkinson focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  {...register("password")}
+                />
+                {errors.password && (
+                  <p className="mt-1 font-atkinson text-sm text-red-600 tracking-tight font-thin">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+              <div className="mb-6">
+                <label
+                  htmlFor="confirm-password"
+                  className="font-atkinson text-lg tracking-wide"
+                >
+                  Confirm Password
+                </label>
+                <input
+                  id="confirm-password"
+                  // name="password"
+                  type="password"
+                  autoComplete="new-password"
+                  className="w-full px-3 py-3 border-2 border-gray-30 text-blackfaded rounded-md font-atkinson focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  {...register("confirmPassword")}
+                />
+                {errors.confirmPassword && (
+                  <p className="mt-1 font-atkinson text-sm text-red-600 tracking-tight font-thin">
+                    {errors.confirmPassword.message}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-3">
+              <button
+                type="submit"
+                className="w-1/3 flex justify-center py-3 px-4 border border-transparent text-md font-atkinson font-bold rounded-md text-white bg-blue hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Sign up
+              </button>
+            </div>
+          </form>
+        </div>
+      ) : (
+        <div className="otp-form w-[50%] h-90vh flex flex-col justify-center items-center p-10">
+          <h2 className="font-atkinson font-bold text-2xl mb-3">
+            Account verification
+          </h2>
+          <h1 className="font-atkinson font-bold text-3xl mb-2">
+            Enter the 6 digit PIN sent to you
+          </h1>
+          <p className="font-atkinson text-lg mb-6">
+            PIN sent to given email address.
+          </p>
+          <div className="mb-5">
+            <InputOTP maxLength={6} onChange={(value) => setOtp(value)}>
+              <InputOTPGroup>
+                <InputOTPSlot index={0} />
+                <InputOTPSlot index={1} />
+                <InputOTPSlot index={2} />
+              </InputOTPGroup>
+              <InputOTPSeparator />
+              <InputOTPGroup>
+                <InputOTPSlot index={3} />
+                <InputOTPSlot index={4} />
+                <InputOTPSlot index={5} />
+              </InputOTPGroup>
+            </InputOTP>
+          </div>
+          <button className="bg-blue font-atkinson text-white py-2 px-6 rounded-md mb-5"
+            onClick={verifyOtp}
+          >
+            Submit
+          </button>
+          <a className="font-atkinson text-blue hover: cursor-pointer">
+            <span className="text-black">Didn't recieve pin ? </span>Send again
+          </a>
+          {error && (
+            <p className="mt-1 font-atkinson text-sm text-red-600 tracking-tight font-thin">
+              {error}
+            </p>
+          )}
+        </div>
+      )}
       <div className="space w-[2%] h-screen"></div>
     </div>
   );
