@@ -40,8 +40,8 @@ type FormData = z.infer<typeof schema>;
 
 export default function UserSignup() {
   const [error, setError] = useState<string>("");
-  const [submitted, setSubmitted] = useState<boolean>(true);
-  const [tempToken, setTempToken] = useState<string>("asdf");
+  const [submitted, setSubmitted] = useState<boolean>(false);
+  const [tempToken, setTempToken] = useState<string>("");
   const [otp, setOtp] = useState<string>("");
 
   const {
@@ -62,24 +62,42 @@ export default function UserSignup() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const response = await axios.post("/user-service/auth/send-otp", {
+      const response = await axios.post("/user-service/auth/auth/sendOtp", {
         email: data.email,
         password: data.password,
         username: data.fullName,
         role: data.role,
       });
+
+      console.log("response",response);
+      // const response = await axios.post("/user-service/auth/test");
+      // console.log(response);
+      // const response = await axios.post('/user-service/auth/send-otp', {
+      //   headers: {
+      //     'Content-Type': 'application/json'
+      //   },
+      //   body: JSON.stringify({
+      //       email: data.email,
+      //       password: data.password,
+      //       username: data.fullName,
+      //       role: data.role,
+      //     })
+      // })
+      // console.log(response);
+      setSubmitted(true);
+      setError("");
     } catch (err) {
       setError("Invalid credentials");
     }
   };
 
-  const verifyOtp = async () => {
-    if (tempToken === "") setSubmitted(false);
-    if (otp.length < 6) setError("Invalid otp!");
-    const response = await axios.post("/user-service/auth/signup", {
-      
-    })
-  };
+  // const verifyOtp = async () => {
+  //   if (tempToken === "") setSubmitted(false);
+  //   if (otp.length < 6) setError("Invalid otp!");
+  //   const response = await axios.post("/user-service/auth/signup", {
+
+  //   })
+  // };
 
   return (
     <div className="min-h-screen w-full flex items-center justify-between bg-background sm:px-6 lg:px-8">
@@ -296,9 +314,7 @@ export default function UserSignup() {
               </InputOTPGroup>
             </InputOTP>
           </div>
-          <button className="bg-blue font-atkinson text-white py-2 px-6 rounded-md mb-5"
-            onClick={verifyOtp}
-          >
+          <button className="bg-blue font-atkinson text-white py-2 px-6 rounded-md mb-5">
             Submit
           </button>
           <a className="font-atkinson text-blue hover: cursor-pointer">
