@@ -11,7 +11,7 @@ export default function App() {
       <NavbarContent justify="end">
         <NavbarItem>
           <Button variant={"allBlue"} asChild>
-            <Link href="/auth">
+            <Link href="/sign-up">
               Register / Log In
             </Link>
           </Button>

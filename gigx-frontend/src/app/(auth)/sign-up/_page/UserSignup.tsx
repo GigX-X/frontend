@@ -14,6 +14,7 @@ import {
   InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
+import useTokenStore from "@/store/useTokenStore";
 
 const schema = z
   .object({
@@ -39,10 +40,16 @@ const schema = z
 type FormData = z.infer<typeof schema>;
 
 export default function UserSignup() {
+  const signUpToken = useTokenStore((state) => state.signUpToken);
+  const setSignUpToken = useTokenStore((state) => state.setSignUpToken);
+  const deleteSignUpToken = useTokenStore((state) => state.deleteSignUpToken);
+  
   const [error, setError] = useState<string>("");
+  const [otpLoading, setOtpLoading] = useState<boolean>(false);
   const [submitted, setSubmitted] = useState<boolean>(false);
-  const [tempToken, setTempToken] = useState<string>("");
   const [otp, setOtp] = useState<string>("");
+
+  const router = useRouter();
 
   const {
     register,
@@ -62,6 +69,8 @@ export default function UserSignup() {
 
   const onSubmit = async (data: FormData) => {
     try {
+      setOtpLoading(true);
+
       const response = await axios.post("/user-service/auth/auth/sendOtp", {
         email: data.email,
         password: data.password,
@@ -69,35 +78,33 @@ export default function UserSignup() {
         role: data.role,
       });
 
-      console.log("response",response);
-      // const response = await axios.post("/user-service/auth/test");
-      // console.log(response);
-      // const response = await axios.post('/user-service/auth/send-otp', {
-      //   headers: {
-      //     'Content-Type': 'application/json'
-      //   },
-      //   body: JSON.stringify({
-      //       email: data.email,
-      //       password: data.password,
-      //       username: data.fullName,
-      //       role: data.role,
-      //     })
-      // })
-      // console.log(response);
+      if(signUpToken) deleteSignUpToken();
+      setSignUpToken(response.data);
+      setTimeout(() => {
+        deleteSignUpToken();
+      }, 60000);
+
       setSubmitted(true);
+      setOtpLoading(false);
       setError("");
     } catch (err) {
       setError("Invalid credentials");
     }
   };
 
-  // const verifyOtp = async () => {
-  //   if (tempToken === "") setSubmitted(false);
-  //   if (otp.length < 6) setError("Invalid otp!");
-  //   const response = await axios.post("/user-service/auth/signup", {
-
-  //   })
-  // };
+  const verifyOtp = async () => {
+    if (otp.length < 6) setError("Invalid otp!");
+    try {
+      const response = await axios.post("/user-service/auth/auth/signup", {
+        token: signUpToken,
+        otp: otp
+      });
+      if(response) router.push('/sign-in');
+    } catch(error) {
+      setError("Invalid OTP!")
+      setOtp("");
+    }
+  };
 
   return (
     <div className="min-h-screen w-full flex items-center justify-between bg-background sm:px-6 lg:px-8">
@@ -283,7 +290,7 @@ export default function UserSignup() {
                 type="submit"
                 className="w-1/3 flex justify-center py-3 px-4 border border-transparent text-md font-atkinson font-bold rounded-md text-white bg-blue hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
-                Sign up
+                {otpLoading ? 'Loading...' : 'Sign up'}
               </button>
             </div>
           </form>
@@ -314,7 +321,7 @@ export default function UserSignup() {
               </InputOTPGroup>
             </InputOTP>
           </div>
-          <button className="bg-blue font-atkinson text-white py-2 px-6 rounded-md mb-5">
+          <button onClick={() => verifyOtp()} className="bg-blue font-atkinson text-white py-2 px-6 rounded-md mb-5">
             Submit
           </button>
           <a className="font-atkinson text-blue hover: cursor-pointer">
